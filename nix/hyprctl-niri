@@ -1,0 +1,55 @@
+#!/bin/sh
+# Minimal hyprctl stand-in for niri: answers the monitor and window queries
+# Omasnap needs to capture the focused output. Other commands (pin placement,
+# window rules, scroll policy) fail, and Omasnap falls back gracefully.
+set -eu
+
+json=false
+args=""
+for arg in "$@"; do
+  case "$arg" in
+    -j) json=true ;;
+    *) args="$args $arg" ;;
+  esac
+done
+args="${args# }"
+
+case "$json $args" in
+  "true monitors")
+    output="$(niri msg -j focused-output)"
+    workspace="$(niri msg -j workspaces | jq '[.[] | select(.is_focused)][0].id // 0')"
+    printf '%s\n' "$output" | jq --argjson workspace "$workspace" '
+      (.logical.transform | test("90|270")) as $rotated
+      | (if .current_mode != null then .modes[.current_mode] else null end) as $mode
+      | [{
+      name: .name,
+      focused: true,
+      # Hyprland reports the untransformed mode size in pixels.
+      width: ($mode.width // (if $rotated then .logical.height else .logical.width end) * .logical.scale | round),
+      height: ($mode.height // (if $rotated then .logical.width else .logical.height end) * .logical.scale | round),
+      x: .logical.x,
+      y: .logical.y,
+      scale: .logical.scale,
+      transform: (
+        if .logical.transform == "90" then 1
+        elif .logical.transform == "180" then 2
+        elif .logical.transform == "270" then 3
+        elif .logical.transform == "Flipped" then 4
+        elif .logical.transform == "Flipped90" then 5
+        elif .logical.transform == "Flipped180" then 6
+        elif .logical.transform == "Flipped270" then 7
+        else 0
+        end
+      ),
+      activeWorkspace: { id: $workspace }
+    }]'
+    ;;
+  "true clients")
+    # Niri cannot provide the image-copy protocol Omasnap needs for window mode.
+    printf '[]\n'
+    ;;
+  *)
+    printf 'hyprctl-niri: unsupported command: %s\n' "$*" >&2
+    exit 1
+    ;;
+esac

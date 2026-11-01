@@ -1,0 +1,72 @@
+name: Update
+
+on:
+  schedule:
+    # Twice a day, off the top of the hour.
+    - cron: "17 5,17 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: update
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.update.outputs.changed }}
+      version: ${{ steps.update.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: DeterminateSystems/nix-installer-action@v20
+      - name: Update sources
+        id: update
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/update.sh
+      - run: git diff -- sources.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sources
+          path: sources.json
+
+  build:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: sources
+      - uses: DeterminateSystems/nix-installer-action@v20
+      - name: Build
+        run: nix build --print-build-logs .#omasnap .#omasnap-niri
+
+  commit:
+    needs: [update, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v5
+        with:
+          name: sources
+      - name: Commit
+        env:
+          VERSION: ${{ needs.update.outputs.version }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- sources.json; then
+            echo "Nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sources.json
+          git commit -m "chore: update omasnap to $VERSION"
+          git pull --rebase
+          git push
