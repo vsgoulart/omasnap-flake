@@ -45,7 +45,8 @@ case "$json $args" in
     }]'
     ;;
   "true clients")
-    # Niri cannot provide the image-copy protocol Omasnap needs for window mode.
+    # Window mode crops the output capture to Hyprland window geometry, which
+    # this stand-in does not translate from niri, so it offers no windows.
     printf '[]\n'
     ;;
   *)

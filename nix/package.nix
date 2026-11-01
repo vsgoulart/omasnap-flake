@@ -77,7 +77,6 @@ stdenvNoCC.mkDerivation {
 
   buildInputs = [
     qt6.qtbase
-    qt6.qtwayland
     kdePackages.layer-shell-qt
     wayland
     libdeflate
@@ -105,7 +104,7 @@ stdenvNoCC.mkDerivation {
     runHook preInstallCheck
 
     test -f $out/share/applications/omasnap.desktop
-    HOME=$(mktemp -d) QT_QPA_PLATFORM=offscreen $out/bin/omasnap --version | grep -F '${source.version}'
+    QT_QPA_PLATFORM=offscreen $out/bin/omasnap --version | grep -F '${source.version}'
 
     runHook postInstallCheck
   '';
