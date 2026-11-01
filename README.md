@@ -51,8 +51,11 @@ Upstream only supports Hyprland: it discovers monitors and windows through
 
 - Fullscreen and region capture work on the focused output.
 - Window capture is unavailable (no windows are reported).
-- Hyprland-only extras (pin placement, window rules, natural-scroll detection)
-  fail and Omasnap falls back to its defaults.
+- Hyprland window rules (`hyprctl eval`) are accepted and ignored, so
+  previews, pins and Save As windows open. Add equivalent niri window rules to
+  place them (see below).
+- Other Hyprland-only extras (pin placement, natural-scroll detection) fail
+  and Omasnap falls back to its defaults.
 
 The stand-in shadows any real `hyprctl`, so use `omasnap` on Hyprland. It runs
 the `niri` on your `PATH` (so `niri msg` matches the running compositor) and
@@ -62,6 +65,29 @@ Omasnap 1.16.0 and later capture through the `ext-image-copy-capture` Wayland
 protocol. niri supports it for outputs since
 [niri-wm/niri#4554](https://github.com/niri-wm/niri/pull/4554), which is newer
 than niri 26.04: use a niri build from `main` until a release includes it.
+
+Since 1.21.0, a fresh capture copies to the clipboard and shows a floating
+preview with an Edit button. Pass `--editor overlay` to annotate straight
+away, as before. niri window rules that mirror the ones Omasnap registers on
+Hyprland (with niri-flake's `programs.niri.settings`):
+
+```nix
+window-rules = [
+  {
+    matches = [ { app-id = "^omasnap$"; title = "^omasnap-pin [0-9]+$"; } ];
+    open-floating = true;
+    open-focused = false;
+    default-floating-position = { x = 16; y = 16; relative-to = "bottom-right"; };
+    border.enable = false;
+    focus-ring.enable = false;
+    shadow.enable = false;
+  }
+  {
+    matches = [ { app-id = "^omasnap$"; title = "^Save screenshot as$"; } ];
+    open-floating = true;
+  }
+];
+```
 
 ## Differences from upstream
 

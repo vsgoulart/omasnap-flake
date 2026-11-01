@@ -49,6 +49,11 @@ case "$json $args" in
     # this stand-in does not translate from niri, so it offers no windows.
     printf '[]\n'
     ;;
+  "false eval "*)
+    # Hyprland window rules (floating previews, editor, Save As). niri reads
+    # its rules from its own config, so accept them; Omasnap only proceeds
+    # to show those windows once the rules are registered.
+    ;;
   *)
     printf 'hyprctl-niri: unsupported command: %s\n' "$*" >&2
     exit 1
