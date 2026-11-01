@@ -40,13 +40,10 @@ let
       runHook preInstall
 
       install -Dm755 ${./hyprctl-niri} $out/bin/hyprctl
+      # Prefer the system's niri so `niri msg` matches the running compositor.
       wrapProgram $out/bin/hyprctl \
-        --prefix PATH : ${
-          lib.makeBinPath [
-            jq
-            niri
-          ]
-        }
+        --prefix PATH : ${lib.makeBinPath [ jq ]} \
+        --suffix PATH : ${lib.makeBinPath [ niri ]}
 
       runHook postInstall
     '';

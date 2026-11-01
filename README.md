@@ -54,7 +54,14 @@ Upstream only supports Hyprland: it discovers monitors and windows through
 - Hyprland-only extras (pin placement, window rules, natural-scroll detection)
   fail and Omasnap falls back to its defaults.
 
-The stand-in shadows any real `hyprctl`, so use `omasnap` on Hyprland.
+The stand-in shadows any real `hyprctl`, so use `omasnap` on Hyprland. It runs
+the `niri` on your `PATH` (so `niri msg` matches the running compositor) and
+falls back to nixpkgs' niri.
+
+Omasnap 1.16.0 and later capture through the `ext-image-copy-capture` Wayland
+protocol. niri supports it for outputs since
+[niri-wm/niri#4554](https://github.com/niri-wm/niri/pull/4554), which is newer
+than niri 26.04: use a niri build from `main` until a release includes it.
 
 ## Differences from upstream
 
