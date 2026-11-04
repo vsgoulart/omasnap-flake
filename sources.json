@@ -1,7 +1,7 @@
 {
-  "version": "1.24.0",
+  "version": "1.25.0",
   "x86_64-linux": {
-    "hash": "sha256-NZl0fpnlbQ/fEhzb0Ph1QysgNJ2zBN3F8sf0vSvI+5o=",
-    "url": "https://github.com/omacom/omasnap/releases/download/v1.24.0/omasnap-1.24.0-archlinux-x86_64.tar.gz"
+    "hash": "sha256-p2t/WAkmh5k65z58d7lYGuCXwNbWX2QgxItcnxj3Dq8=",
+    "url": "https://github.com/omacom/omasnap/releases/download/v1.25.0/omasnap-1.25.0-archlinux-x86_64.tar.gz"
   }
 }
